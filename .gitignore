@@ -1,0 +1,4 @@
+.nhip-local/
+nhip-reviewed-*.jsonl
+nhip-session-log-*.json
+node_modules/
