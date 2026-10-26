@@ -762,3 +762,8 @@ html[data-theme="dark"] [data-action="confirm-artifact"] {
     transform: none !important;
   }
 }
+
+/* Keep the featured action above two compact alternatives; no empty left column. */
+.mission-grid[data-suggestion-layout] { grid-template-columns: minmax(0, 1fr); }
+[data-alternatives-slot] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+@media (max-width: 760px) { [data-alternatives-slot] { grid-template-columns: minmax(0, 1fr); } }

@@ -14,6 +14,7 @@ function replaceRequired(text, before, after, file){
   return text.replaceAll(before,after);
 }
 const originals=new Map(),planned=new Map();
+try{originals.set('provider-catalog.mjs',await readFile(path.join(root,'provider-catalog.mjs'),'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
 for(const name of ['server.mjs','local-codex.mjs','router-ai.mjs','local-ai.mjs'])originals.set(name,await readFile(path.join(root,name),'utf8'));
 for(const name of ['local-codex.mjs','router-ai.mjs','local-ai.mjs']){
   let text=originals.get(name);
@@ -40,7 +41,7 @@ if(!server.includes('if(await nhipRoute(req,res,pathname))return;')) {
 server=replaceRequired(server,"closeTutor();closePersonal();process.exit(0);","closeNhip();closeTutor();closePersonal();process.exit(0);",'server.mjs');
 server=server.replace("['/api/nhip/status','/api/nhip/chat','/api/health']","['/api/nhip/status','/api/nhip/chat','/api/nhip/health','/api/health']");
 planned.set('server.mjs',server);
-for(const name of ['nhip-http.mjs','nhip-prompts.mjs'])planned.set(name,await readFile(path.join(here,name),'utf8'));
+for(const name of ['nhip-http.mjs','nhip-prompts.mjs','provider-catalog.mjs'])planned.set(name,await readFile(path.join(here,name),'utf8'));
 for(const [name,text] of planned){
  const check=spawnSync(process.execPath,['--input-type=module','--check'],{input:text,encoding:'utf8'});
  if(check.status!==0)throw new Error(name+' chưa qua kiểm tra cú pháp; chưa sửa file nào.');
