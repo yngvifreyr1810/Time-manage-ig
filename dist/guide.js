@@ -18,15 +18,16 @@
     const index=journey&&mission&&mission.id===journey.id?journey.index:0;
     const step=mission?.steps[Math.min(index,mission.steps.length-1)];
     const sameTask=!!(journey&&mission&&mission.id===journey.id);
-    const phase=sameTask&&journey.index>=journey.limit?'completed':journey?.guide?.introSeen?'step':'introduction';
-    const key=phase==='introduction'?'intro':'step-'+index;
+    const activity=sameTask&&mission?.kind==='activity';
+    const phase=sameTask&&journey.index>=journey.limit?'completed':activity?'step':journey?.guide?.introSeen?'step':'introduction';
+    const key=activity?'activity-'+index:phase==='introduction'?'intro':'step-'+index;
     const guideConversation=includeGuide&&sameTask?(journey.guide?.threads?.[key]||[]).filter(message=>['user','assistant'].includes(message.role)&&!message.hidden&&!message.pending&&!message.failed).slice(-2).map(message=>({role:message.role,text:String(message.text).slice(0,900)})):[];
     return {app:'Nhịp',version:3,liveLearningProgress:false,view:location.hash.slice(1)||'next',
       localNow:{date:dayKey(),time:clockTime(),timezone:timeZone},
       appRole:'Đồng hành quản lý thời gian và chọn việc theo mục tiêu do người dùng cung cấp. Các nhiệm vụ AI hiện có là ví dụ thực hành, không đại diện toàn bộ sở thích hoặc hướng nghề. Lịch linh hoạt; chưa rõ thì hỏi một điểm hoặc đưa 2–3 lựa chọn cụ thể.',
       appHelp:'Khám phá: chọn việc hoặc tự chọn. Ghi nhanh: lưu/sửa hoạt động. Nhìn lại: thời gian và kết quả đã xác nhận. Hỏi Nhịp: chat theo ngữ cảnh. Model dùng qua bộ kết nối TechPath trên máy; chưa đồng bộ tiến độ học. Bản nháp và phản hồi ở trình duyệt, không có fine-tuning tự động. Chỉ xuất dữ liệu khi bấm xuất.',
       connection:{connected:!!window.NhipAI?.connected,provider:state.aiConfig?.provider||null,model:state.aiConfig?.model||null},
-      task:mission?{id:mission.id,title:sameTask?(state.session?.task.title||mission.title):mission.title,goal:sameTask&&journey.limit===1?'Một nhận xét được người dùng xác nhận':mission.output,phase,step:Math.min(index+1,sameTask?journey.limit:mission.steps.length),total:sameTask?journey.limit:mission.steps.length,material:step?.input,candidate:step?.candidate,question:step?.question}:state.session?{title:state.session.task.title}:null,
+      task:mission?{id:mission.id,kind:mission.kind||'sample',categoryLabel:mission.categoryLabel||mission.label,title:sameTask?(state.session?.task.title||mission.title):mission.title,goal:sameTask&&journey.limit===1?'Một kết quả được người dùng xác nhận':mission.output,phase,step:Math.min(index+1,sameTask?journey.limit:mission.steps.length),total:sameTask?journey.limit:mission.steps.length,...(step?.input!==undefined?{material:step.input}:{}),...(step?.candidate!==undefined?{candidate:step.candidate}:{}),question:step?.question,choices:Array.isArray(step?.choices)?step.choices:[],inputMode:step?.inputMode||'text'}:state.session?{title:state.session.task.title}:null,
       confirmedSteps:mission&&journey&&mission.id===journey.id?journey.answers.slice(-2).map(a=>({title:a.title,text:a.text.slice(0,700)})):[],
       approvedSessionNotes:journey?.guideNotes?.slice(-2).map(note=>String(note).slice(0,800))||[],
       recordedActivities:todayEntries().filter(entry=>!entry.sample).slice(-3).map(entry=>({title:entry.title,time:entry.time,minutes:entry.minutes,outcome:entry.outcome.slice(0,300)})),
@@ -56,14 +57,14 @@
   }
   function paintGuide(){
     const target=$('#guide-messages');if(!target||!state.workshop)return;
-    const g=guideState(),key=g.introSeen?'step-'+state.workshop.index:'intro';
+    const mission=currentMission(),g=guideState(),key=mission?.kind==='activity'?'activity-'+state.workshop.index:(g.introSeen?'step-'+state.workshop.index:'intro');
     target.replaceChildren();for(const message of threadFor(key))if(!message.hidden)target.append(messageNode(message,'guide'));
   }
   async function askGuide(prompt,{kind='action',intro=false}={}){
     if(window.NhipAI.busy){notify('Mình đang trả lời một lượt. Bạn có thể bấm Dừng nếu muốn đổi câu hỏi.');return;}
     if(!window.NhipAI.connected){window.NhipAI.openConnection();return;}
     const journey=state.workshop,g=guideState();if(!journey||!g)return;
-    const key=intro?'intro':'step-'+journey.index,thread=threadFor(key),previous=history(thread);
+    const key=intro?'intro':(currentMission()?.kind==='activity'?'activity-':'step-')+journey.index,thread=threadFor(key),previous=history(thread);
     const user={role:'user',text:prompt,kind,hidden:kind==='action'};thread.push(user);
     const reply={role:'assistant',text:'',pending:true};thread.push(reply);save();render();
     try{
@@ -73,8 +74,76 @@
     }catch(error){reply.pending=false;reply.failed=true;reply.role='note';reply.text=error.message;user.failed=true;save();}
     if(state.workshop===journey){render();if(kind==='answer')$('#guide-input')?.focus({preventScroll:true});}
   }
+  function renderActivity(journey,mission){
+    const content=$('#work-content'),progress=$('#work-progress'); content.replaceChildren(); progress.replaceChildren();
+    journey.answers=Array.isArray(journey.answers)?journey.answers:[];
+    journey.drafts=journey.drafts&&typeof journey.drafts==='object'?journey.drafts:{};
+    journey.inputs=journey.inputs&&typeof journey.inputs==='object'?journey.inputs:{};
+    journey.limit=Math.max(1,Math.min(mission.steps.length,Number(journey.limit)||mission.steps.length));
+    journey.index=Math.max(0,Math.min(journey.limit,Number.isInteger(journey.index)?journey.index:0));
+    const g=guideState(), step=mission.steps[journey.index];
+    $('#work-output').textContent=mission.output; $('#work-feedback').hidden=false; $('#work-overline').textContent=mission.categoryLabel;
+    for(let i=0;i<journey.limit;i++) progress.append(el('div','progress-step '+(i<journey.index?'complete':i===journey.index?'current':''),`${i<journey.index?'✓':String(i+1).padStart(2,'0')} ${mission.steps[i].title}`));
+    if(journey.index>=journey.limit){
+      content.append(el('span','step-overline','KẾT QUẢ ĐỂ BẠN XÁC NHẬN'),el('h2','step-title','Kiểm tra điều bạn muốn giữ.'),el('p','guide-lead','Bản nháp chưa được ghi nhận là kết quả cho đến khi bạn xác nhận.'));
+      const preview=el('textarea','activity-artifact'); preview.id='activity-artifact'; preview.dataset.artifactPreview='true'; preview.rows=5; preview.value=journey.artifact?.text||journey.answers.filter(Boolean).map(answer=>`${answer.title}: ${answer.text}`).join('\n'); preview.addEventListener('input',()=>{journey.artifact={text:preview.value,source:'user',confirmed:false};save();});
+      content.append(el('label','','Kết quả có thể chỉnh sửa'),preview);
+      if(!journey.artifact?.confirmed){ const confirmArtifact=button('Giữ kết quả này','button primary',()=>{journey.artifact={text:preview.value.trim(),source:'user',confirmed:true};save();render();}); confirmArtifact.dataset.action='confirm-artifact'; content.append(confirmArtifact); return; }
+      if(mission.id==='ai-preferences'){
+        const memory=el('details','memory-confirmation'); memory.open=true; memory.append(el('summary','','Xem điều muốn nhớ (không bắt buộc)'));
+        const support=journey.inputs?.support||'cách hỗ trợ đã chọn';
+        const note=el('textarea','memory-note'); note.rows=2; note.maxLength=500; note.value=journey.memoryDraft||`Bạn muốn AI ưu tiên ${support.toLowerCase()} trong những việc tương tự.`; note.addEventListener('input',()=>{journey.memoryDraft=note.value;save();});
+        const controls=el('div','memory-actions');
+        controls.append(button('Chỉ giữ cho phiên này','button outlined',()=>{journey.guideNotes=[...(journey.guideNotes||[]),note.value.trim()];save();window.NhipWorkshop.finish();}));
+        controls.append(button('Nhớ cho việc tương tự','button primary',()=>{if(note.value.trim()){state.aiMemory=Array.isArray(state.aiMemory)?state.aiMemory:[];state.aiMemory.push({text:note.value.trim(),missionId:mission.id,at:new Date().toISOString(),source:'confirmed'});}save();window.NhipWorkshop.finish();}));
+        controls.append(button('Bỏ qua','text-button',()=>window.NhipWorkshop.finish())); memory.append(el('p','field-hint','Chỉ lưu điều bạn tự xem lại và xác nhận; mặc định không ghi nhớ lâu dài.'),note,controls); content.append(memory);
+      } else content.append(button('Kết thúc & lưu kết quả','button primary',()=>window.NhipWorkshop.finish()));
+      return;
+    }
+    const stepWrap=el('section','activity-step'); stepWrap.dataset.activityStep=step.id;
+    const stepTitle=el('h2','step-title',step.title); stepTitle.dataset.field='step-title';
+    const stepQuestion=el('label','step-question',step.question); stepQuestion.dataset.field='step-question'; stepQuestion.htmlFor='activity-step-input';
+    stepWrap.append(el('span','step-overline',`BƯỚC ${journey.index+1} / ${journey.limit}`),stepTitle,el('p','guide-lead',mission.intro||mission.description),stepQuestion);
+    let input;
+    if(step.inputMode==='choice'||step.inputMode==='action'){
+      input=el('div','activity-choices'); input.dataset.stepInput=step.inputMode;
+      for(const choice of step.choices||[]){const b=button(choice,'button outlined',()=>{journey.inputs[step.id]=choice;journey.drafts[journey.index]=choice==='Tự viết'||choice==='Nhập tên bài'?'':choice;save();render();}); b.dataset.stepInput=step.inputMode; if(journey.inputs[step.id]===choice)b.classList.add('selected'); input.append(b);}
+      if(['Tự viết','Nhập tên bài'].includes(journey.inputs[step.id])){
+        const free=el('textarea','step-input'); free.id='activity-step-input'; free.dataset.stepInput='text'; free.rows=3; free.maxLength=4000; free.value=journey.drafts[journey.index]||''; free.placeholder='Viết theo cách của bạn…'; free.addEventListener('input',()=>{journey.drafts[journey.index]=free.value;journey.inputs[step.id]=free.value;save();}); input.append(free);
+      }
+    }else{
+      const prefilled = step.inputMode==='artifact' && !journey.drafts[journey.index]
+        ? (mission.id==='ai-preferences'
+          ? `Mình muốn: ${journey.inputs.need || 'một việc cụ thể'}. Cách hỗ trợ trước: ${journey.inputs.support || 'chưa chọn'}.`
+          : mission.id==='ai-real-draft'
+            ? `Tin nhắn cần nói: ${journey.inputs.message || 'chưa nhập'}\nGiọng điệu: ${journey.inputs.tone || 'chưa chọn'}`
+            : journey.inputs[step.id] || '')
+        : journey.drafts[journey.index]||journey.inputs[step.id]||'';
+      input=el('textarea','step-input'); input.id='activity-step-input'; input.dataset.stepInput=step.inputMode||'text'; input.rows=3; input.maxLength=4000; input.value=prefilled; input.placeholder=step.optional?'Không bắt buộc — bạn có thể để trống…':'Viết theo cách của bạn. Một câu cũng được…'; input.addEventListener('input',()=>{journey.drafts[journey.index]=input.value;journey.inputs[step.id]=input.value;save();});
+      if(prefilled && !journey.drafts[journey.index]) journey.drafts[journey.index]=prefilled;
+    }
+    stepWrap.append(input);
+    const error=el('p','form-error'); error.setAttribute('role','alert'); content.append(error);
+    const actions=el('div','activity-actions');
+    const confirm=button(step.optional?'Bỏ qua bước này':'Xác nhận bước này','button primary',()=>{
+      const answer=(journey.drafts[journey.index]||journey.inputs[step.id]||'').trim();
+      if(!answer&&!step.optional){error.textContent='Bạn thêm một câu trả lời hoặc chọn một phương án nhé.';return;}
+      journey.answers[journey.index]={stepId:step.id,title:step.title,text:answer}; delete journey.drafts[journey.index]; journey.index++; save(); render();
+    }); confirm.dataset.action='confirm-step'; actions.append(confirm);
+    if(step.aiAction){const prompt=mission.id==='ai-real-draft'&&step.id==='draft'
+      ?`Soạn một bản nháp ngắn chỉ từ nội dung người dùng đã nhập trong phiên này: “${journey.inputs.message||''}”. Giọng điệu đã chọn: “${journey.inputs.tone||'chưa chọn'}”. Không thêm người nhận, dữ kiện hay lời hứa; chỉ trả bản nháp để người dùng sửa.`
+      :`Giúp mình với bước “${step.question}”. Chỉ đưa một gợi ý ngắn và một câu hỏi tiếp theo.`;
+      const ask=button(step.aiActionLabel||'Nhờ AI gợi ý','button outlined ai-action',()=>askGuide(prompt,{kind:'action'})); ask.dataset.action='ask-ai'; actions.append(ask);}
+    stepWrap.append(error,actions); content.append(stepWrap);
+    const thread=threadFor(`activity-${journey.index}`); if(thread.length){const messages=el('div','guide-messages'); messages.id='guide-messages'; for(const message of thread)if(!message.hidden)messages.append(messageNode(message,'guide')); content.append(messages);}
+    if(window.NhipAI.busy) content.append(button('Dừng phản hồi','button quiet',()=>window.NhipAI.stop()));
+    content.querySelectorAll('.ai-action').forEach((b)=>{b.disabled=window.NhipAI.busy;});
+    content.append(el('p','guide-save-note','Bản nháp được giữ lại; Nhịp không tự gọi AI khi bạn quay lại.'));
+  }
   function render(){
-    const journey=state.workshop,mission=currentMission();if(!journey||!mission)return;
+    const journey=state.workshop,mission=currentMission();if(!journey)return;
+    if(!mission){const content=$('#work-content');content.replaceChildren(el('span','step-overline','PHIÊN ĐÃ LƯU'),el('h2','step-title','Hoạt động cũ không còn trong catalog.'),el('p','guide-lead','Dữ liệu phiên vẫn được giữ nguyên. Bạn có thể kết thúc để ghi nhận phần đã làm.'),button('Kết thúc & ghi nhận phần đã làm','button primary',()=>window.NhipWorkshop.finish()));return;}
+    if(mission.kind==='activity'){renderActivity(journey,mission);return;}
     const g=guideState(),content=$('#work-content'),progress=$('#work-progress');content.replaceChildren();progress.replaceChildren();
     $('#work-output').textContent=mission.output;$('#work-feedback').hidden=false;
     $('#work-overline').textContent='CÙNG LÀM · MỖI LƯỢT MỘT BƯỚC';
@@ -166,6 +235,7 @@
     $('#chat-stop').hidden=!window.NhipAI.busy;$('#chat-send').disabled=window.NhipAI.busy;
     $('#chat-connection-note').textContent=window.NhipAI.connected?state.aiConfig.model+' · gửi khi bạn chọn':'Chưa kết nối model';
     document.querySelectorAll('.ai-action,.guide-next').forEach(b=>b.disabled=window.NhipAI.busy);
+    if(state.workshop&&currentMission()?.kind==='activity')render();
     const source=$('#sources-dialog .source-row:last-of-type strong');if(source)source.textContent=window.NhipAI.connected?'Đã kết nối qua máy':'Chưa kết nối';
   });
   document.addEventListener('keydown',event=>{

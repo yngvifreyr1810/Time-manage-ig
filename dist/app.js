@@ -154,6 +154,7 @@ function route() {
   });
   $('#page-label').textContent = { next: 'Khám phá', log: 'Ghi nhanh', review: 'Nhìn lại', work: 'Cùng làm' }[view];
   document.title = `${$('#page-label').textContent} — Nhịp`;
+  if (view === 'next') renderSuggestion();
   if (document.readyState === 'complete') { window.scrollTo(0, 0); $('#main').focus({ preventScroll: true }); }
 }
 function openEntry(entry = {}, options = {}) {
@@ -186,11 +187,12 @@ function renderTimer() {
 }
 function renderSession() {
   const session = state.session;
-  $('#resume-strip').hidden = !session;
-  if (session) $('#resume-title').textContent = session.task.title;
+  $('#resume-strip').hidden = true;
   $('#session-card').hidden = !session;
   if (!session) return;
   $('#session-title').textContent = session.task.title;
+  const workMode = document.querySelector('.work-mode span');
+  if (workMode) workMode.textContent = session.task.kind === 'sample' ? '· tình huống mẫu' : '';
   const paused = session.startedAt === null;
   const pause = $('#pause-session');
   pause.replaceChildren(icon(paused ? 'play' : 'pause'), document.createTextNode(paused ? 'Tiếp tục' : 'Tạm dừng'));
@@ -237,6 +239,13 @@ $('#finish-session').addEventListener('click', () => {
   state.session.elapsed = sessionElapsed(); state.session.startedAt = null; save(); renderSession();
   openEntry({ title: state.session.task.title, category: state.session.task.category, minutes: Math.max(1, Math.round(state.session.elapsed / 60000)), time: state.session.time }, { fromSession: true });
 });
+window.NhipApp = {
+  finishCurrentSession() {
+    if (!state.session) return;
+    state.session.elapsed = sessionElapsed(); state.session.startedAt = null; save(); renderSession();
+    openEntry({ title: state.session.task.title, category: state.session.task.category, minutes: Math.max(1, Math.round(state.session.elapsed / 60000)), time: state.session.time }, { fromSession: true });
+  },
+};
 $('#prepare-log').addEventListener('click', () => {
   const text = $('#quick-text').value.trim();
   $('#quick-error').textContent = '';
@@ -263,7 +272,12 @@ $('#entry-form').addEventListener('submit', (event) => {
   if (editingId && Array.isArray(state.workshopHistory)) state.workshopHistory = state.workshopHistory.map((item) => item.id === editingId ? { ...item, title: entry.title, result: entry.outcome } : item);
   if (editingId) state.entries = state.entries.map((item) => item.id === editingId ? entry : item);
   else state.entries.push(entry);
-  if (pendingSession) { state.session = null; state.workshop = null; renderSession(); location.hash = 'review'; }
+  if (pendingSession) {
+    state.session = null; state.workshop = null; renderSession();
+    const queued = window.NhipWorkshop?.consumeQueuedActivity?.();
+    if (queued) { save(); closeEntry(); window.NhipWorkshop.openTask(queued); }
+    else location.hash = 'review';
+  }
   save(); renderRecords(); renderSuggestion(); closeEntry(); $('#quick-text').value = ''; notify('Đã lưu bản ghi trên trình duyệt này.');
 });
 $('#delete-entry').addEventListener('click', () => {
@@ -274,6 +288,7 @@ $('#delete-entry').addEventListener('click', () => {
 });
 for (const selector of ['#entry-dialog', '#task-dialog']) {
   $(selector).addEventListener('close', () => {
+    if (selector === '#entry-dialog' && pendingSession && window.NhipWorkshop) window.NhipWorkshop.consumeQueuedActivity?.();
     pendingSession = false;
     if (previousFocus?.isConnected && !previousFocus.closest('[hidden]')) previousFocus.focus();
     else $('#main').focus({ preventScroll: true });

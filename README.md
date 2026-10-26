@@ -4,9 +4,9 @@ Vietnamese interface prototype for an on-demand time companion: concrete activit
 
 ## Current source and next iteration
 
-This repository now includes the deployed app source, connector and bundled design skills. The next homepage redesign is **planned, not implemented**. Its developer handoff starts at [`docs/agent-handoff/START-HERE.md`](docs/agent-handoff/START-HERE.md).
+This repository now includes the deployed app source, connector and bundled design skills. This implementation branch contains an integrated homepage/activity demo checkpoint. Final acceptance is paused at the user's request; see [`RUN-STATUS.md`](docs/agent-handoff/RUN-STATUS.md) for actual checks and remaining release work. Its original developer contract starts at [`docs/agent-handoff/START-HERE.md`](docs/agent-handoff/START-HERE.md).
 
-To continue in local Codex, clone/download this repository, open its root folder, and ask the lead to follow [`docs/agent-handoff/local-lead-start.md`](docs/agent-handoff/local-lead-start.md). That file contains the requirements and coordination instructions for the real GitHub Copilot and Antigravity agents. Their local CLI connections still need verification; having the desktop apps installed does not establish an agent connection.
+To continue in local Codex, clone/download this repository, open its root folder, and ask the lead to follow [`docs/agent-handoff/local-lead-start.md`](docs/agent-handoff/local-lead-start.md). That file contains the requirements and coordination instructions for the real GitHub Copilot and Antigravity agents. Actual Copilot, Antigravity and replacement Qoder CLI sessions participated; current ownership and incomplete acceptance are recorded in `docs/agent-handoff/RUN-STATUS.md` and `provider-amendment-v2.md`.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ Open http://localhost:3000 in a browser. The app also works by opening `dist/ind
 
 ## Guided workflow and local AI
 
-Selecting a task opens an explanation before any worksheet. A connected model introduces the task and guides one step at a time. **Hỏi Nhịp** opens contextual chat; rejection feedback uses the same conversation instead of a multi-field dialog.
+New activities start with an authored introduction and one local question without requiring a connection. Explicit AI actions can request help; legacy sample exercises retain their guide path. **Hỏi Nhịp** opens contextual chat; rejection feedback uses the same conversation instead of a multi-field dialog.
 
 The compact model selector groups the returned catalog and remembers the explicit model choice for each provider. Opening it reads connection metadata without starting inference. Endpoint/setup controls are under **Thiết lập nâng cao**.
 
@@ -32,7 +32,7 @@ The connector must be installed on the user's machine before live use. Local-pro
 
 ## Scope and data
 
-- A centered top navigation, three concrete example missions and a resumable workshop, with responsive iris/peach light and dark themes.
+- A concrete featured suggestion, two quieter alternatives, six activities and retained sample exercises, with resumable sessions and iris light/dark themes.
 - Neutral sample entries and authored workshop cases; guidance and chat use the explicitly connected model.
 - Start/pause/resume a session; drafts survive reloads and sessions pause when their tab is hidden.
 - Conversational rejection feedback and explicit one-session/future-session approval for a proposed interpretation.

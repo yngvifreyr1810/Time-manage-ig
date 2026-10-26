@@ -1,5 +1,7 @@
 # Nhịp: agent implementation handoff
 
+Current execution checkpoint: see [`RUN-STATUS.md`](RUN-STATUS.md) and [`provider-amendment-v2.md`](provider-amendment-v2.md). The original status/role text below is historical where superseded. Final acceptance is paused; resume only on user instruction.
+
 Status: planning only; external implementers have NOT been dispatched.
 
 Baseline: `279d65acd1ca3c8e6e7233b12cc6cca3df571479`.

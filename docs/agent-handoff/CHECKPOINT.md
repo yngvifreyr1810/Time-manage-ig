@@ -1,5 +1,7 @@
 # Resume checkpoint
 
+Current execution checkpoint: see [`RUN-STATUS.md`](RUN-STATUS.md) and [`provider-amendment-v2.md`](provider-amendment-v2.md). The original status/role text below is historical where superseded. Final acceptance is paused; resume only on user instruction.
+
 Completed: deployed-source synchronization prepared; original bundled skills preserved; GPT-6 Astra produced the detailed product/implementation plan; Codex reviewed interfaces and prepared real-agent role/coordination contracts.
 
 Application baseline: `279d65acd1ca3c8e6e7233b12cc6cca3df571479` in the source workspace. The GitHub synchronization may use a new commit with the same application files; compare file content rather than require this historical commit to exist on GitHub.
