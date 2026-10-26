@@ -4,9 +4,9 @@ Vietnamese interface prototype for an on-demand time companion: concrete activit
 
 ## Current source and next iteration
 
-This repository now includes the deployed app source, connector and bundled design skills. This implementation branch contains an integrated homepage/activity demo checkpoint. Final acceptance is paused at the user's request; see [`RUN-STATUS.md`](docs/agent-handoff/RUN-STATUS.md) for actual checks and remaining release work. Its original developer contract starts at [`docs/agent-handoff/START-HERE.md`](docs/agent-handoff/START-HERE.md).
+This repository includes the completed homepage/activity implementation, connector and bundled design skills. The final combined offline suite passed **22/22** and the connector archive was rebuilt and verified. See [`RUN-STATUS.md`](docs/agent-handoff/RUN-STATUS.md) for delivered behavior, provenance and deployment limits.
 
-To continue in local Codex, clone/download this repository, open its root folder, and ask the lead to follow [`docs/agent-handoff/local-lead-start.md`](docs/agent-handoff/local-lead-start.md). That file contains the requirements and coordination instructions for the real GitHub Copilot and Antigravity agents. Actual Copilot, Antigravity and replacement Qoder CLI sessions participated; current ownership and incomplete acceptance are recorded in `docs/agent-handoff/RUN-STATUS.md` and `provider-amendment-v2.md`.
+Continue directly with Codex using the agreed [`implementation plan`](docs/agent-handoff/implementation-plan.md); external-agent orchestration has ended. Cloud deployment follows this source publication and must preserve the existing owner-only Site access.
 
 ## Run locally
 
@@ -46,10 +46,10 @@ The connector must be installed on the user's machine before live use. Local-pro
 ## Offline verification
 
 ```sh
-node --test checks/nhip-connector.test.mjs checks/nhip-restart.test.mjs
+node --test checks/nhip-connector.test.mjs checks/nhip-restart.test.mjs checks/hip-activities.test.mjs
 python3 scripts/package-connector.py
 ```
 
-Transport tests use isolated local stubs and do not import a real model provider. Browser checks also use a separate local stub; a successful check or deployment is not proof of a live provider response on the user's Windows device.
+Browser checks require Playwright and Chromium (or `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` pointing to existing installations). Transport tests use isolated local stubs and do not import a real model provider. Browser checks also use a separate local stub; a successful check or deployment is not proof of a live provider response on the user's Windows device.
 
 Only agreed product requirements belong in project documentation. Do not add private user profiles or conversation history to the repository.

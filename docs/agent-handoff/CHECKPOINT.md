@@ -1,6 +1,6 @@
 # Resume checkpoint
 
-Current execution checkpoint: see [`RUN-STATUS.md`](RUN-STATUS.md) and [`provider-amendment-v2.md`](provider-amendment-v2.md). The original status/role text below is historical where superseded. Final acceptance is paused; resume only on user instruction.
+Current implementation is complete and offline-verified; see [`RUN-STATUS.md`](RUN-STATUS.md). The user has ended external-agent orchestration: continue directly with Codex. Earlier status, role and dispatch instructions below are historical and superseded. Cloud deployment is the next step.
 
 Completed: deployed-source synchronization prepared; original bundled skills preserved; GPT-6 Astra produced the detailed product/implementation plan; Codex reviewed interfaces and prepared real-agent role/coordination contracts.
 

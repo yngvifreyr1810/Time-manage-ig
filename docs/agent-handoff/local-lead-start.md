@@ -1,6 +1,6 @@
 # Start a local lead session
 
-Current execution checkpoint: see [`RUN-STATUS.md`](RUN-STATUS.md) and [`provider-amendment-v2.md`](provider-amendment-v2.md). The original status/role text below is historical where superseded. Final acceptance is paused; resume only on user instruction.
+Current implementation is complete and offline-verified; see [`RUN-STATUS.md`](RUN-STATUS.md). The user has ended external-agent orchestration: continue directly with Codex. Earlier status, role and dispatch instructions below are historical and superseded. Cloud deployment is the next step.
 
 The user need only open the downloaded/cloned project in local Codex and provide this file path. Everything below is for the lead, not a survey for the user.
 
