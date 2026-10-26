@@ -21,3 +21,10 @@ Neu cau truc TechPath khac ban da kiem tra, bo cai se dung truoc khi sua.
 
 Du lieu phan hoi duoc luu trong trinh duyet Nhip. Xuat JSONL chi tao file
 tren may; khong tu gui di fine-tune hoac dua vao ma nguon.
+
+Qoder: sau khi cai ban nay, chay Check-Qoder.cmd va chon thu muc TechPath.
+Moi model mot request ngan (co tieu hao quota), timeout 45 giay, khong retry.
+Ket qua luu cuc bo tai .techpath-local/qoder-model-health.json trong TechPath.
+Chi Qoder PASS duoc giu sau khi co it nhat mot model thanh cong.
+Neu tat ca loi, giu danh sach cu de tranh nham loi ket noi thanh loi model.
+Bam lam moi danh sach model o hai app sau khi kiem tra. Copilot da bi loai.

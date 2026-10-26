@@ -30,6 +30,8 @@ for(const name of ['local-codex.mjs','router-ai.mjs','local-ai.mjs']){
     }
   planned.set(name,text);
 }
+planned.set('router-ai.mjs',planned.get('router-ai.mjs').replace('personalModels:personalModels(body.data)','personalModels:personalModels(body.data).filter(model=>! /^(gh|copilot)\\//i.test(model.id))'));
+if(!planned.get('router-ai.mjs').includes('export async function qoderCheckRequest(')) planned.set('router-ai.mjs',planned.get('router-ai.mjs')+'\n'+await readFile(path.join(here,'qoder-check-transport.txt'),'utf8'));
 let server=originals.get('server.mjs');
 if(!server.includes("from './nhip-http.mjs'")){
   server="import {nhipRoute,closeNhip} from './nhip-http.mjs';\n"+server;
@@ -41,7 +43,7 @@ if(!server.includes('if(await nhipRoute(req,res,pathname))return;')) {
 server=replaceRequired(server,"closeTutor();closePersonal();process.exit(0);","closeNhip();closeTutor();closePersonal();process.exit(0);",'server.mjs');
 server=server.replace("['/api/nhip/status','/api/nhip/chat','/api/health']","['/api/nhip/status','/api/nhip/chat','/api/nhip/health','/api/health']");
 planned.set('server.mjs',server);
-for(const name of ['nhip-http.mjs','nhip-prompts.mjs','provider-catalog.mjs'])planned.set(name,await readFile(path.join(here,name),'utf8'));
+for(const name of ['nhip-http.mjs','nhip-prompts.mjs','provider-catalog.mjs','check-qoder.mjs'])planned.set(name,await readFile(path.join(here,name),'utf8'));
 for(const [name,text] of planned){
  const check=spawnSync(process.execPath,['--input-type=module','--check'],{input:text,encoding:'utf8'});
  if(check.status!==0)throw new Error(name+' chưa qua kiểm tra cú pháp; chưa sửa file nào.');
