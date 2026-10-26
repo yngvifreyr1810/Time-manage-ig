@@ -4,9 +4,9 @@ Vietnamese interface prototype for an on-demand time companion: concrete activit
 
 ## Current source and next iteration
 
-This repository now includes the deployed app source, connector and bundled design skills. The next homepage redesign is **planned, not implemented**. Its developer handoff starts at [`docs/agent-handoff/START-HERE.md`](docs/agent-handoff/START-HERE.md).
+This repository includes the completed homepage/activity implementation, connector and bundled design skills. The final combined offline suite passed **22/22** and the connector archive was rebuilt and verified. See [`RUN-STATUS.md`](docs/agent-handoff/RUN-STATUS.md) for delivered behavior, provenance and deployment limits.
 
-To continue in local Codex, clone/download this repository, open its root folder, and ask the lead to follow [`docs/agent-handoff/local-lead-start.md`](docs/agent-handoff/local-lead-start.md). That file contains the requirements and coordination instructions for the real GitHub Copilot and Antigravity agents. Their local CLI connections still need verification; having the desktop apps installed does not establish an agent connection.
+Continue directly with Codex using the agreed [`implementation plan`](docs/agent-handoff/implementation-plan.md); external-agent orchestration has ended. Cloud deployment follows this source publication and must preserve the existing owner-only Site access.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ Open http://localhost:3000 in a browser. The app also works by opening `dist/ind
 
 ## Guided workflow and local AI
 
-Selecting a task opens an explanation before any worksheet. A connected model introduces the task and guides one step at a time. **Hỏi Nhịp** opens contextual chat; rejection feedback uses the same conversation instead of a multi-field dialog.
+New activities start with an authored introduction and one local question without requiring a connection. Explicit AI actions can request help; legacy sample exercises retain their guide path. **Hỏi Nhịp** opens contextual chat; rejection feedback uses the same conversation instead of a multi-field dialog.
 
 The compact model selector groups the returned catalog and remembers the explicit model choice for each provider. Opening it reads connection metadata without starting inference. Endpoint/setup controls are under **Thiết lập nâng cao**.
 
@@ -32,7 +32,7 @@ The connector must be installed on the user's machine before live use. Local-pro
 
 ## Scope and data
 
-- A centered top navigation, three concrete example missions and a resumable workshop, with responsive iris/peach light and dark themes.
+- A concrete featured suggestion, two quieter alternatives, six activities and retained sample exercises, with resumable sessions and iris light/dark themes.
 - Neutral sample entries and authored workshop cases; guidance and chat use the explicitly connected model.
 - Start/pause/resume a session; drafts survive reloads and sessions pause when their tab is hidden.
 - Conversational rejection feedback and explicit one-session/future-session approval for a proposed interpretation.
@@ -46,10 +46,10 @@ The connector must be installed on the user's machine before live use. Local-pro
 ## Offline verification
 
 ```sh
-node --test checks/nhip-connector.test.mjs checks/nhip-restart.test.mjs
+node --test checks/nhip-connector.test.mjs checks/nhip-restart.test.mjs checks/hip-activities.test.mjs
 python3 scripts/package-connector.py
 ```
 
-Transport tests use isolated local stubs and do not import a real model provider. Browser checks also use a separate local stub; a successful check or deployment is not proof of a live provider response on the user's Windows device.
+Browser checks require Playwright and Chromium (or `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` pointing to existing installations). Transport tests use isolated local stubs and do not import a real model provider. Browser checks also use a separate local stub; a successful check or deployment is not proof of a live provider response on the user's Windows device.
 
 Only agreed product requirements belong in project documentation. Do not add private user profiles or conversation history to the repository.

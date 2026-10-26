@@ -1,5 +1,7 @@
 # Start a local lead session
 
+Current implementation is complete and offline-verified; see [`RUN-STATUS.md`](RUN-STATUS.md). The user has ended external-agent orchestration: continue directly with Codex. Earlier status, role and dispatch instructions below are historical and superseded. Cloud deployment is the next step.
+
 The user need only open the downloaded/cloned project in local Codex and provide this file path. Everything below is for the lead, not a survey for the user.
 
 Continue the Nhịp homepage redesign using `docs/agent-handoff/START-HERE.md`. Read the authoritative implementation and execution contracts. The cloud task has prepared the plan; the current deployed app is still the baseline design.

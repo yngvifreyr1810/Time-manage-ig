@@ -1,5 +1,7 @@
 # Nhịp: agent implementation handoff
 
+Current implementation is complete and offline-verified; see [`RUN-STATUS.md`](RUN-STATUS.md). The user has ended external-agent orchestration: continue directly with Codex. Earlier status, role and dispatch instructions below are historical and superseded. Cloud deployment is the next step.
+
 Status: planning only; external implementers have NOT been dispatched.
 
 Baseline: `279d65acd1ca3c8e6e7233b12cc6cca3df571479`.
